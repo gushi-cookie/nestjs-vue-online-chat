@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: online-chat-nginx
+    container_name: online-chat-nginx
+    build:
+      context: ./services/nginx
+      args:
+      - "PORT=${NGINX_PORT}"
+      - "FRONTEND_PORT=${FRONTEND_PORT}"
+      - "BACKEND_PORT=${BACKEND_PORT}"
+    ports:
+    - ${NGINX_PORT}:${NGINX_PORT}
+    volumes:
+    - ./services/nginx/logs:/var/log/nginx
+    depends_on:
+    - frontend
+    - backend
+
+
+  frontend:
+    image: online-chat-frontend
+    container_name: online-chat-frontend
+    user: ${CONTAINERS_UID}:${CONTAINERS_GID}
+    build:
+      context: ./services/frontend
+      target: ${BUILD_TARGET}
+      args:
+      - "PORT=${FRONTEND_PORT}"
+    volumes:
+    - ./services/frontend:/app
+    ports:
+    - 127.0.0.1:${FRONTEND_PORT}:${FRONTEND_PORT}
+
+
+  backend:
+    image: online-chat-backend
+    container_name: online-chat-backend
+    user: ${CONTAINERS_UID}:${CONTAINERS_GID}
+    build:
+      context: ./services/backend
+      target: ${BUILD_TARGET}
+      args:
+      - "PORT=${BACKEND_PORT}"
+    volumes:
+    - ./services/backend:/app
+    ports:
+    - 127.0.0.1:${BACKEND_PORT}:${BACKEND_PORT}
+    environment:
+      JWT_KEY: ${JWT_KEY}
+      BUILD_TARGET: ${BUILD_TARGET}
