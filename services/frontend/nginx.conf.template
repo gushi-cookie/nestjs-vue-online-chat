@@ -13,7 +13,7 @@ http {
     include /etc/nginx/mime.types;
 
     server {
-        listen ${PORT};
+        listen ${APP_PORT};
         client_max_body_size 20m;
         root /var/www/app;
         

@@ -1,17 +1,12 @@
-FROM node:latest as build
+FROM node:latest AS build
 
 WORKDIR /app
 COPY ./ /app
-RUN npm install && npm run build-only
+CMD ["sh", "-c", "npm install && npm run build-only"]
 
 
 
-FROM nginx:latest as prod
-
-ARG PORT
-ENV PORT=${PORT}
-EXPOSE ${PORT}/tcp
-
+FROM nginx:latest AS production
 COPY --from=build /app/dist /var/www/app/
 
 WORKDIR /etc/nginx
@@ -21,12 +16,8 @@ RUN DOLLAR='$' envsubst < ./nginx.conf.template > ./nginx.conf
 
 
 
-FROM node:latest as dev
-
-ARG PORT
-ENV PORT=${PORT}
-EXPOSE ${PORT}/tcp
+FROM node:latest AS development
 
 WORKDIR /app
 
-CMD npm install && npx vite --host --port ${PORT}
+CMD ["sh", "-c", "npm install && npm run dev"]
