@@ -4,13 +4,13 @@ services:
     container_name: online-chat-postgres
     user: ${CONTAINERS_UID}:${CONTAINERS_GID}
     ports:
-    - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    - 127.0.0.1:${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
       - ./pg-pdata:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER: ${DATABASE_USER}
-      - POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      - POSTGRES_PORT: ${DATABASE_PORT}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_PORT: ${DATABASE_PORT}
 
   nginx:
     image: online-chat-nginx
@@ -42,7 +42,7 @@ services:
     ports:
     - 127.0.0.1:${FRONTEND_PORT}:${FRONTEND_PORT}
     environment:
-      - APP_PORT=${FRONTEND_PORT}
+      APP_PORT: ${FRONTEND_PORT}
 
 
   backend:
@@ -57,6 +57,7 @@ services:
     ports:
     - 127.0.0.1:${BACKEND_PORT}:${BACKEND_PORT}
     environment:
+      LOG_MODE: ${BACKEND_LOG_MODE}
       ENVIRONMENT: ${ENVIRONMENT}
       APP_PORT: ${BACKEND_PORT}
 
