@@ -13,3 +13,9 @@ export class LogModes {
         return LogModes[mode];
     }
 }
+
+
+export enum PortsRange {
+    min = 0,
+    max = 65535,
+}

@@ -2,17 +2,17 @@ import { AppConfig, AuthConfig, SQLConfig } from './config.types';
 
 
 export const rawAppConfig = AppConfig.fromRawData(
-    process.env['ENVIRONMENT'],
+    process.env['NODE_ENV'],
     process.env['APP_PORT'],
     process.env['LOG_MODE'],
 );
 
 export const rawSQLConfig = SQLConfig.fromRawData(
-    process.env['DATABASE_HOST'],
-    process.env['DATABASE_PORT'],
-    process.env['DATABASE_USER'],
-    process.env['DATABASE_PASSWORD'],
-    process.env['DATABASE_DIALECT'],
+    process.env['POSTGRES_DATABASE'],
+    process.env['POSTGRES_HOST'],
+    process.env['POSTGRES_PORT'],
+    process.env['POSTGRES_USER'],
+    process.env['POSTGRES_PASSWORD'],
 );
 
 export const rawAuthConfig = AuthConfig.fromRawData(

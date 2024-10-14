@@ -1,13 +1,7 @@
 import { IsEnum, IsNumber, IsString, Max, Min } from 'class-validator';
-import { PortsRange } from './constants';
+import { PortsRange } from '../common/constants';
 import { ConfigObject } from '@nestjs/config';
 
-
-export enum SQLDialect {
-    Postgres = 'postgres',
-    MySQL = 'mysql',
-    SQLite = 'sqlite',
-}
 
 export enum Environment {
     Production = 'production',
@@ -23,6 +17,9 @@ export enum LogMode {
 
 export class SQLConfig implements ConfigObject {
     @IsString()
+    database: string;
+
+    @IsString()
     host: string;
 
     @IsNumber()
@@ -36,18 +33,15 @@ export class SQLConfig implements ConfigObject {
     @IsString()
     password: string;
 
-    @IsEnum(SQLDialect)
-    dialect: SQLDialect;
 
-
-    static fromRawData(host: any, port: any, user: any, password: any, dialect: any): SQLConfig {
+    static fromRawData(database: any, host: any, port: any, user: any, password: any): SQLConfig {
         const obj = new SQLConfig();
 
+        obj.database = database;
         obj.host = host;
         obj.port = port;
         obj.user = user;
         obj.password = password;
-        obj.dialect = dialect;
 
         return obj;
     }
