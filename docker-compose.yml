@@ -1,16 +1,20 @@
 services:
   postgres:
-    image: postgres:17.0
     container_name: online-chat-postgres
     user: ${CONTAINERS_UID}:${CONTAINERS_GID}
+    build:
+      context: ./services/postgres
+      args:
+      - "pg_uid=${CONTAINERS_UID}"
+      - "pg_gid=${CONTAINERS_GID}"
     ports:
-    - 127.0.0.1:${DATABASE_PORT}:${DATABASE_PORT}
+    - 127.0.0.1:${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
-      - ./pg-pdata:/var/lib/postgresql/data
+      - ./pg-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_PORT: ${DATABASE_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT}
 
   nginx:
     image: online-chat-nginx
@@ -58,14 +62,14 @@ services:
     - 127.0.0.1:${BACKEND_PORT}:${BACKEND_PORT}
     environment:
       LOG_MODE: ${BACKEND_LOG_MODE}
-      ENVIRONMENT: ${ENVIRONMENT}
+      NODE_ENV: ${ENVIRONMENT}
       APP_PORT: ${BACKEND_PORT}
 
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_PORT: ${DATABASE_PORT}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_DIALECT: ${DATABASE_DIALECT}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}

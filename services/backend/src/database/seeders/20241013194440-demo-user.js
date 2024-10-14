@@ -1,0 +1,20 @@
+'use strict';
+
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.bulkInsert('users', [{
+      login: 'test-user-bla-bla',
+      nickname: 'hola-pepega',
+      password: 'pass',
+      role_id: 1
+    }]);
+  },
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete('users', [{
+      login: 'test-user-bla-bla'
+    }]);
+  }
+};
