@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '@nestjs/common';
+import { Logger, LogLevel, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -18,8 +18,9 @@ async function bootstrap(): Promise<string> {
 
     const appConfig = nest.get(ConfigService).get<AppConfig>(ConfigKey.App);
     if(!appConfig) throw new Error(`AppConfig is ${appConfig}.`);
-    
+
     logLevels = LogModes.getMode(appConfig.logMode);
+    nest.useGlobalPipes(new ValidationPipe());
     await nest.listen(appConfig.port);
     return await nest.getUrl();
 }
