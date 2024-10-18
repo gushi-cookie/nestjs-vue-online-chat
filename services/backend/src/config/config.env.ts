@@ -1,4 +1,6 @@
-import { AppConfig, AuthConfig, SQLConfig } from './config.types';
+import { parseBoolean } from 'src/common/utils/string.util';
+import { AppConfig, AuthConfig, MailerConfig, SQLConfig } from './config.types';
+import ms from 'ms';
 
 
 export const rawAppConfig = AppConfig.fromRawData(
@@ -18,4 +20,13 @@ export const rawSQLConfig = SQLConfig.fromRawData(
 export const rawAuthConfig = AuthConfig.fromRawData(
     process.env['JWT_SECRET'],
     process.env['JWT_EXPIRES_IN'],
+    ms(process.env['VERIFICATION_TOKEN_EXPIRES_IN'] as any),
+);
+
+export const rawMailerConfig = MailerConfig.fromRawData(
+    process.env['MAILER_HOST'],
+    process.env['MAILER_PORT'],
+    process.env['MAILER_LOGIN'],
+    process.env['MAILER_PASSWORD'],
+    parseBoolean(process.env['MAILER_SECURE']),
 );

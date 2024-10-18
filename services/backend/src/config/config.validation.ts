@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { AppConfig, AuthConfig, SQLConfig } from './config.types';
+import { AppConfig, AuthConfig, MailerConfig, SQLConfig } from './config.types';
 import { validateSync } from 'class-validator';
 
 
@@ -37,6 +37,21 @@ export function validateSQLConfig(rawConfig: SQLConfig): SQLConfig {
 
 export function validateAuthConfig(rawConfig: AuthConfig): AuthConfig {
     const config = plainToInstance(AuthConfig, rawConfig, {
+        enableImplicitConversion: true,
+    });
+
+    const errors = validateSync(config, {
+        skipMissingProperties: false,
+    });
+
+    if(errors.length > 0) {
+        throw new Error(errors.toString());
+    }
+    return config;
+}
+
+export function validateMailerConfig(rawConfig: MailerConfig): MailerConfig {
+    const config = plainToInstance(MailerConfig, rawConfig, {
         enableImplicitConversion: true,
     });
 

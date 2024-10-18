@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsString, Max, Min } from 'class-validator';
 import { PortsRange } from '../common/constants';
 import { ConfigObject } from '@nestjs/config';
 
@@ -14,6 +14,37 @@ export enum LogMode {
 }
 
 
+export class MailerConfig implements ConfigObject {
+    @IsString()
+    host: string;
+
+    @IsNumber()
+    @Min(PortsRange.min)
+    @Max(PortsRange.max)
+    port: number;
+
+    @IsString()
+    login: string;
+
+    @IsString()
+    password: string;
+
+    @IsBoolean()
+    secure: boolean;
+
+    
+    static fromRawData(host: any, port: any, login: any, password: any, secure: any): MailerConfig {
+        const obj = new MailerConfig();
+
+        obj.host = host;
+        obj.port = port;
+        obj.login = login;
+        obj.password = password;
+        obj.secure = secure;
+
+        return obj;
+    }
+}
 
 export class SQLConfig implements ConfigObject {
     @IsString()
@@ -76,13 +107,18 @@ export class AuthConfig implements ConfigObject {
     jwtSecret: string;
 
     @IsString()
-    expiresIn: string;
+    jwtExpiresIn: string;
 
-    static fromRawData(jwtSecret: any, expiresIn: any): AuthConfig {
+    @IsNumber({ allowNaN: false, allowInfinity: false })
+    verificationTokenExpiresIn: number;
+
+
+    static fromRawData(jwtSecret: any, jwtExpiresIn: any, verificationTokenExpiresIn: any): AuthConfig {
         const obj = new AuthConfig();
 
         obj.jwtSecret = jwtSecret;
-        obj.expiresIn = expiresIn;
+        obj.jwtExpiresIn = jwtExpiresIn;
+        obj.verificationTokenExpiresIn = verificationTokenExpiresIn;
 
         return obj;
     }
