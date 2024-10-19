@@ -42,8 +42,8 @@ export namespace regVerification {
     };
 
 
-    // Template description
-    export const template: Template = {
+    // Templates description
+    const template: Template = {
         file: 'reg-verification.html.hbs',
         components: [{
             file: 'head.html.hbs',
@@ -64,16 +64,24 @@ export namespace regVerification {
     };
 
 
-    // Delegates preparation
-    const preparedTemplates = new Map<string, HandlebarsTemplateDelegate>();
+    const plainTemplate: Template = {
+        file: 'reg-verification.plain.hbs',
+        components: [],
+    };
 
-    export async function prepareTemplates(logoSrc: string): Promise<number> {
+
+    // Templates preparation
+    const localeContext = 'email.regVerification';
+    const preparedHtmlTemplates = new Map<string, HandlebarsTemplateDelegate>();
+    const preparedPlainTemplates = new Map<string, HandlebarsTemplateDelegate>();
+
+    async function _prepareTemplates(logoSrc: string, type: 'html' | 'plain'): Promise<number> {
         let contextWrap;
         let deps: Dependencies;
         let assembleData: AssembleData;
-        let template;
+        let preparedTemplate;
         for(let localeCode of localizationService.supportedLocales) {
-            contextWrap = localizationService.getLocaleContext(localeCode, 'email.regVerification');
+            contextWrap = localizationService.getLocaleContext(localeCode, localeContext);
 
             deps = {
                 lang: contextWrap.lang,
@@ -82,22 +90,47 @@ export namespace regVerification {
 
             assembleData = merge(contextWrap.context as Locale, deps);
 
-            template = await templateUtil.assembleTemplate(emailBaseDir, regVerification.template, assembleData);
-            preparedTemplates.set(
-                contextWrap.lang,
-                Handlebars.compile(template)
-            );
+            
+            if(type === 'html') {
+                preparedTemplate = await templateUtil.assembleTemplate(emailBaseDir, template, assembleData);
+                preparedHtmlTemplates.set(
+                    contextWrap.lang,
+                    Handlebars.compile(preparedTemplate)
+                );
+            } else {
+                preparedTemplate = await templateUtil.assembleTemplate(emailBaseDir, plainTemplate, assembleData);
+                preparedPlainTemplates.set(
+                    contextWrap.lang,
+                    Handlebars.compile(preparedTemplate)
+                );
+            }
+            
         }
         return prepareTemplates.length;
     }
 
-    export async function render(placeholders: Placeholders, lang: string): Promise<string> {
-        let template = preparedTemplates.get(lang);
-        if(!template) template = preparedTemplates.get(localizationService.defaultLocale);
-        if(!template) throw new Error(`Couldn't find a template.`);
+    export async function prepareTemplates(logoSrc: string): Promise<number> {
+        let count = await _prepareTemplates(logoSrc, 'html');
+        count += await _prepareTemplates(logoSrc, 'plain');
+        return count;
+    }
+
+
+    export function renderHtml(placeholders: Placeholders, lang: string): string {
+        let template = preparedHtmlTemplates.get(lang);
+        if(!template) template = preparedHtmlTemplates.get(localizationService.defaultLocale);
+        if(!template) throw new Error(`Couldn't find a html template.`);
 
         return template(placeholders);
     }
+
+    export function renderPlain(placeholders: Placeholders, lang: string): string {
+        let template = preparedPlainTemplates.get(lang);
+        if(!template) template = preparedHtmlTemplates.get(localizationService.defaultLocale);
+        if(!template) throw new Error(`Couldn't find a plain template.`);
+
+        return template(placeholders);
+    } 
 
 
     // Init stage
