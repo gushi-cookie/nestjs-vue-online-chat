@@ -1,5 +1,5 @@
 import { LocalizationService } from 'src/localization/localization.service';
-import { Template } from '../templates.interface';
+import { RenderWrap, Template, TemplateDelegates } from '../templates.interface';
 import merge from 'deepmerge';
 import * as templateUtil from '../templates.util';
 import Handlebars from 'handlebars';
@@ -12,6 +12,7 @@ export namespace regVerification {
     // Assemble data
     export interface Locale {
         title: string;
+        subject: string;
         header: {
             logoAlt: string;
         }
@@ -70,16 +71,17 @@ export namespace regVerification {
     };
 
 
-    // Templates preparation
+    // Delegates preparation
     const localeContext = 'email.regVerification';
-    const preparedHtmlTemplates = new Map<string, HandlebarsTemplateDelegate>();
-    const preparedPlainTemplates = new Map<string, HandlebarsTemplateDelegate>();
+    const preparedHtmlDelegates = new Map<string, TemplateDelegates>();
+    const preparedPlainDelegates = new Map<string, TemplateDelegates>();
 
     async function _prepareTemplates(logoSrc: string, type: 'html' | 'plain'): Promise<number> {
         let contextWrap;
         let deps: Dependencies;
         let assembleData: AssembleData;
         let preparedTemplate;
+        let preparedSubject;
         for(let localeCode of localizationService.supportedLocales) {
             contextWrap = localizationService.getLocaleContext(localeCode, localeContext);
 
@@ -90,23 +92,24 @@ export namespace regVerification {
 
             assembleData = merge(contextWrap.context as Locale, deps);
 
-            
+            preparedSubject = Handlebars.compile((contextWrap.context as Locale).subject);
+
             if(type === 'html') {
                 preparedTemplate = await templateUtil.assembleTemplate(emailBaseDir, template, assembleData);
-                preparedHtmlTemplates.set(
-                    contextWrap.lang,
-                    Handlebars.compile(preparedTemplate)
-                );
+                preparedHtmlDelegates.set(contextWrap.lang, {
+                    subject: preparedSubject,
+                    template: Handlebars.compile(preparedTemplate),
+                });
             } else {
                 preparedTemplate = await templateUtil.assembleTemplate(emailBaseDir, plainTemplate, assembleData);
-                preparedPlainTemplates.set(
-                    contextWrap.lang,
-                    Handlebars.compile(preparedTemplate)
-                );
+                preparedPlainDelegates.set(contextWrap.lang, {
+                    subject: preparedSubject,
+                    template: Handlebars.compile(preparedTemplate),
+                });
             }
-            
         }
-        return prepareTemplates.length;
+
+        return type === 'html' ? preparedHtmlDelegates.size : preparedPlainDelegates.size;
     }
 
     export async function prepareTemplates(logoSrc: string): Promise<number> {
@@ -116,20 +119,26 @@ export namespace regVerification {
     }
 
 
-    export function renderHtml(placeholders: Placeholders, lang: string): string {
-        let template = preparedHtmlTemplates.get(lang);
-        if(!template) template = preparedHtmlTemplates.get(localizationService.defaultLocale);
-        if(!template) throw new Error(`Couldn't find a html template.`);
+    export function renderHtml(placeholders: Placeholders, lang: string): RenderWrap {
+        let delegates = preparedHtmlDelegates.get(lang);
+        if(!delegates) delegates = preparedHtmlDelegates.get(localizationService.defaultLocale);
+        if(!delegates) throw new Error(`Couldn't find a html template.`);
 
-        return template(placeholders);
+        return {
+            subject: delegates.subject(placeholders),
+            template: delegates.template(placeholders)
+        }
     }
 
-    export function renderPlain(placeholders: Placeholders, lang: string): string {
-        let template = preparedPlainTemplates.get(lang);
-        if(!template) template = preparedHtmlTemplates.get(localizationService.defaultLocale);
-        if(!template) throw new Error(`Couldn't find a plain template.`);
+    export function renderPlain(placeholders: Placeholders, lang: string): RenderWrap {
+        let delegates = preparedPlainDelegates.get(lang);
+        if(!delegates) delegates = preparedPlainDelegates.get(localizationService.defaultLocale);
+        if(!delegates) throw new Error(`Couldn't find a plain template.`);
 
-        return template(placeholders);
+        return {
+            subject: delegates.subject(placeholders),
+            template: delegates.template(placeholders)
+        }
     } 
 
 

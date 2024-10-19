@@ -5,6 +5,7 @@ const ru: Locale = {
     email: {
         regVerification: {
             title: 'Подтверждение почты.',
+            subject: 'Подтвердите свою почту',
             header: {
                 logoAlt: 'Логотип',
             },

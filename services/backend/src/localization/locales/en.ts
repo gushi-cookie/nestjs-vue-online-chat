@@ -5,6 +5,7 @@ const en: Locale = {
     email: {
         regVerification: {
             title: 'Email verification',
+            subject: 'Verify your email',
             header: {
                 logoAlt: 'Logo',
             },
