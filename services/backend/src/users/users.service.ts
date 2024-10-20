@@ -25,4 +25,16 @@ export class UsersService {
             include: [Role],
         });
     }
+
+    async hasByLogin(login: string): Promise<boolean> {
+        return await this.userModel.count({
+            where: { login }
+        }) > 0;
+    }
+
+    async hasByEmail(email: string): Promise<boolean> {
+        return await this.userModel.count({
+            where: { email }
+        }) > 0;
+    }
 }

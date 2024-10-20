@@ -13,6 +13,9 @@ export class User extends Model {
     @Column({ allowNull: false })
     declare password: string;
 
+    @Column({ allowNull: false })
+    declare verified: boolean
+
     @Column({ allowNull: false, field: 'role_id' })
     @ForeignKey(() => Role)
     declare roleId: number;
