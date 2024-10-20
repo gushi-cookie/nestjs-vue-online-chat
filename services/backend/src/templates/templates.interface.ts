@@ -4,7 +4,10 @@
 export interface Component {
     file: string;
     name: string;
+
+    /** Should component be compiled by Handlebars at assemble process. */
     compile: boolean;
+    
     components: Component[];
 }
 
@@ -19,15 +22,15 @@ export interface Template {
 /**
  * Pre-render templates.
  */
-export interface TemplateDelegates {
-    subject: HandlebarsTemplateDelegate;
-    template: HandlebarsTemplateDelegate;
+export interface PreparedTemplate {
+    subject: string;
+    template: string;
 }
 
 /**
  * Rendered templates.
  */
-export interface RenderWrap {
+export interface RenderedTemplate {
     subject: string;
     template: string;
 }

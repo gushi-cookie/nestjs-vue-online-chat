@@ -11,7 +11,7 @@ const en: Locale = {
             },
             content: {
                 h2: 'Verify Your Email Address',
-                p: 'Hi, {{nickname}}! Please click the link below to verify your email address and activate your account.',
+                p: 'Hi, ((nickname))! Please click the link below to verify your email address and activate your account.',
                 buttonText: 'Verify Email',
             },
             footer: {

@@ -3,6 +3,13 @@ import path from 'node:path';
 import merge from 'deepmerge';
 import fs from 'node:fs/promises';
 import Handlebars from 'handlebars';
+import dot from 'dot-object';
+
+
+export const handlebarsOptions: CompileOptions = {
+    // TO-DO should be true but when a property is missing execution hangs.
+    strict: false,
+};
 
 
 /**
@@ -20,7 +27,7 @@ export async function assembleTemplate(baseDir: string, template: Template, data
         components[component.name] = await assembleComponent(baseDir, component, data);
     }
 
-    return Handlebars.compile(rawTemplate)(merge(components, data));
+    return Handlebars.compile(rawTemplate, handlebarsOptions)(merge(components, data));
 }
 
 
@@ -40,5 +47,17 @@ export async function assembleComponent(baseDir: string, component: Component, d
         childComponents[childComponent.name] = await assembleComponent(baseDir, childComponent, data);
     }
 
-    return Handlebars.compile(rawParentComp)({ ...childComponents, ...data });
+    return Handlebars.compile(rawParentComp, handlebarsOptions)({ ...childComponents, ...data });
+}
+
+
+const placeholderRegExp = /\(\([\w\.]+\)\)/g;
+const roundBracketsRegExp = /[\(\)]/g;
+export function populatePlaceholders(str: string, placeholders: object): string {
+    return str.replace(placeholderRegExp, (match: string, index: number) => {
+        if(str.charAt(index - 1) === '\\') return match;
+
+        match = match.replaceAll(roundBracketsRegExp, '');
+        return dot.pick(match, placeholders);
+    });
 }
