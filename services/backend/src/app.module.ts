@@ -9,10 +9,16 @@ import { ConfigKey } from './config/constants';
 import { User } from './users/user.model';
 import { Role } from './roles/role.model';
 import { RolesModule } from './roles/roles.module';
+import { Verification } from './verification/verification.model';
+import { MailerModule } from './mailer/mailer.module';
+import { TemplatesModule } from './templates/templates.module';
+import { appProviders } from './app.providers';
 
 
 @Module({
     imports: [
+        TemplatesModule,
+        MailerModule,
         RolesModule,
         UsersModule,
         AuthModule,
@@ -38,12 +44,14 @@ import { RolesModule } from './roles/roles.module';
                     username: config.user,
                     password: config.password,
                     database: config.database,
-                    models: [Role, User],
+                    models: [Role, User, Verification],
                     logging: appConfig.logMode === LogMode.Debug,
                 };
                 return options;
             }
         }),
     ],
+    providers: [...appProviders],
+    exports: [...appProviders],
 })
 export class AppModule { }
