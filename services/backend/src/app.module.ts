@@ -9,14 +9,21 @@ import { ConfigKey } from './config/constants';
 import { User } from './users/user.model';
 import { Role } from './roles/role.model';
 import { RolesModule } from './roles/roles.module';
-import { Verification } from './verification/verification.model';
+import { VerificationSession } from './verifications/verification-session.model';
 import { MailerModule } from './mailer/mailer.module';
 import { TemplatesModule } from './templates/templates.module';
 import { appProviders } from './app.providers';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { VerificationsModule } from './verifications/verifications.module';
 
 
 @Module({
     imports: [
+        VerificationsModule,
+        EventEmitterModule.forRoot({
+            global: true,
+            verboseMemoryLeak: true,
+        }),
         TemplatesModule,
         MailerModule,
         RolesModule,
@@ -44,7 +51,7 @@ import { appProviders } from './app.providers';
                     username: config.user,
                     password: config.password,
                     database: config.database,
-                    models: [Role, User, Verification],
+                    models: [Role, User, VerificationSession],
                     logging: appConfig.logMode === LogMode.Debug,
                 };
                 return options;
