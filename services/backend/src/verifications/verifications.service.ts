@@ -1,7 +1,5 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { AuthConfig } from 'src/config/config.types';
-import { ConfigKey } from 'src/config/constants';
 import { VerificationSession } from './verification-session.model';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreationException, SessionType, VerificationResult, sessionsMeta } from './constants';
@@ -15,9 +13,6 @@ let nanoid: nanoidType['nanoid'];
 export class VerificationsService implements OnModuleInit {
     constructor(
         private eventEmitter: EventEmitter2,
-
-        @Inject(ConfigKey.Auth)
-        private authConfig: AuthConfig,
 
         @InjectModel(VerificationSession)
         private verificationSession: typeof VerificationSession,
@@ -46,7 +41,8 @@ export class VerificationsService implements OnModuleInit {
         let session = await this.findSessionByToken(token);
         if(!session) {
             return VerificationResult.TokenNotFound;
-        } else if(session.isExpired(this.authConfig.verificationTokenExpiresIn)) {
+            // TO-DO
+        } else if(session.isExpired(300000)) {
             await session.destroy({ force: true });
             return VerificationResult.Expired;
         }
@@ -68,6 +64,13 @@ export class VerificationsService implements OnModuleInit {
         }
         if(!token) throw new Error(`Couldn't generate a unique session token.`);
         return token;
+    }
+
+    createLink(token: string): string {
+        // TO-DO
+        let url = new URL('verify', 'http://localhost:4000');
+        url.searchParams.append('token', token);
+        return url.toString();
     }
 
 

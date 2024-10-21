@@ -37,4 +37,11 @@ export namespace sessionsMeta {
         }
         return undefined;
     }
+
+    export function getMetaOrThrow(type: string): SessionMeta {
+        for(let meta of metas) {
+            if(meta.type === type) return meta;
+        }
+        throw new Error(`Session meta '${type}' not found.`);
+    }
 }
