@@ -7,10 +7,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConfigKey } from 'src/config/constants';
 import { AuthConfig } from 'src/config/config.types';
 import { authProviders } from './auth.providers';
+import { TemplatesModule } from 'src/templates/templates.module';
+import { VerificationsModule } from 'src/verifications/verifications.module';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 
 @Module({
     imports: [
+        MailerModule,
+        VerificationsModule,
+        TemplatesModule,
         ConfigModule,
         UsersModule,
         JwtModule.registerAsync({
@@ -23,7 +29,7 @@ import { authProviders } from './auth.providers';
                 const options: JwtModuleOptions = {
                     secret: config.jwtSecret,
                     global: true,
-                    signOptions: { expiresIn: config.expiresIn },
+                    signOptions: { expiresIn: config.jwtExpiresIn },
                 };
                 return options;
             },

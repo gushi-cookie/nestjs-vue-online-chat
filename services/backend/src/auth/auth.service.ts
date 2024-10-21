@@ -1,6 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import { SignInException, SignUpException } from './constants';
+import { JwtPayload, SignUpVerificationPayload } from './auth.interface';
+import SignUpDto from './dto/sign-up.dto';
+import { User } from 'src/users/user.model';
+import { OnEvent } from '@nestjs/event-emitter';
+import { sessionsMeta, SessionType } from 'src/verifications/constants';
+
+
+const registrationEventName = sessionsMeta.getMetaOrThrow(SessionType.Registration).eventName;
 
 
 @Injectable()
@@ -10,14 +19,58 @@ export class AuthService {
         private jwtService: JwtService,
     ) {}
 
-    async signIn(login: string, password: string): Promise<string> {
-        const user = await this.usersService.findOneByLogin(login);
+
+    @OnEvent(registrationEventName)
+    async onRegistrationVerified(payload: SignUpVerificationPayload) {
+        let user = await this.usersService.findOneById(payload.userId);
+        if(!user) throw new Error('Unexpected scenario');
         
-        if(!user || user.password !== password) {
-            throw new UnauthorizedException();
+        user.verified = true;
+        await user.save();
+    }
+
+
+    /**
+     * Sign a jwt token for a user.
+     * @param login - user's login.
+     * @param password - user's password processed by bcrypt.
+     * @returns - jwt signed token or an encountered SignIn exception type.
+     */
+    async signIn(loginOrEmail: string, password: string, searchBy: 'login' | 'email'): Promise<string | SignInException> {
+        let user;
+        if(searchBy === 'login') {
+            user = await this.usersService.findOneByLogin(loginOrEmail);
+        } else {
+            user = await this.usersService.findOneByEmail(loginOrEmail);
         }
+
+        if(!user) return SignInException.UserNotFound;
+        if(user.password !== password) return SignInException.WrongPassword;
+        if(!user.verified) return SignInException.UserUnverified;
         
-        const payload = { sub: user.id, login: user.login };
+
+        const payload: JwtPayload = { sub: user.id, login: user.login };
         return await this.jwtService.signAsync(payload);
+    }
+
+
+    /**
+     * Create a new user.
+     * @param data - new user's data.
+     */
+    async signUp(data: SignUpDto): Promise<SignUpException | User> {
+        if(await this.usersService.hasByLogin(data.login)) {
+            return SignUpException.LoginOccupied;
+        } else if(await this.usersService.hasByEmail(data.email)) {
+            return SignUpException.EmailOccupied;
+        }
+
+        return await this.usersService.createOne(
+            data.login,
+            data.nickname,
+            data.password,
+            data.email,
+            false
+        )
     }
 }

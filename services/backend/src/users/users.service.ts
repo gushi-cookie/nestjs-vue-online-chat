@@ -12,9 +12,27 @@ export class UsersService {
     ) {};
 
 
+    async createOne(login: string, nickname: string, password: string, email: string, verified: boolean): Promise<User> {
+        return await this.userModel.create({
+            login,
+            nickname,
+            password,
+            email,
+            verified,
+            roleId: 3,
+        });
+    }
+
     async findOneByLogin(login: string): Promise<User | null> {
         return this.userModel.findOne({
             where: { login },
+            include: [Role],
+        });
+    }
+
+    async findOneByEmail(email: string): Promise<User | null> {
+        return this.userModel.findOne({
+            where: { email },
             include: [Role],
         });
     }

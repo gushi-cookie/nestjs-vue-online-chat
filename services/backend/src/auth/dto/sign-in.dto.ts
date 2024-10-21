@@ -1,15 +1,15 @@
-import { IsString } from "class-validator";
+import { IsEmail, IsString, ValidateIf } from 'class-validator';
+
 
 export default class SignInDto {
     @IsString()
-    login: string;
+    @ValidateIf((ob: SignInDto) => !ob.email || !!ob.login)
+    login?: string;
+
+    @IsEmail()
+    @ValidateIf((ob: SignInDto) => !ob.login || !!ob.email)
+    email?: string;
 
     @IsString()
     password: string;
-
-    
-    constructor(login: string, password: string) {
-        this.login = login;
-        this.password = password;
-    }
 }
