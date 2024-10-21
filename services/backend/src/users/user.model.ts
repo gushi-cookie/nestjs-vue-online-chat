@@ -14,6 +14,9 @@ export class User extends Model {
     declare password: string;
 
     @Column({ allowNull: false })
+    declare email: string;
+
+    @Column({ allowNull: false })
     declare verified: boolean
 
     @Column({ allowNull: false, field: 'role_id' })

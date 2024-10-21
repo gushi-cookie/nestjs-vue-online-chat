@@ -10,7 +10,7 @@
     "start": "node dist/app",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "db:create": "sequelize db:create ${POSTGRES_DATABASE}",
+    "db:create": "sequelize db:create",
     "db:migrate": "sequelize db:migrate",
     "db:seed-roles": "sequelize db:seed --seed primary-roles.js"
   },
