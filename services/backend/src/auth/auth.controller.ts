@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, InternalServerErrorException, Post, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import SignInDto from './dto/sign-in.dto';
+import { SignInByLoginDto, SignInByEmailDto, signInDtos, signInApiBodyOptions, signInApiExtraModels } from './dto/sign-in.dto';
 import SignUpDto from './dto/sign-up.dto';
 import { SignInException, SignUpException } from './constants';
 import { TemplatesService } from 'src/templates/templates.service';
@@ -8,9 +8,12 @@ import { VerificationsService } from 'src/verifications/verifications.service';
 import { CreationException, SessionType } from 'src/verifications/constants';
 import { MailerService } from 'src/mailer/mailer.service';
 import { SignUpVerificationPayload } from './auth.interface';
+import { ApiBody, ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import { MultiDtoValidationPipe } from 'src/common/pipes/multi-dto-validation.pipe';
 
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
     constructor(
         private authService: AuthService,
@@ -22,27 +25,28 @@ export class AuthController {
 
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    async signIn(@Body() data: SignInDto) {
+    @ApiBody(signInApiBodyOptions)
+    @ApiExtraModels(...signInApiExtraModels)
+    async signIn(@Body(new MultiDtoValidationPipe(signInDtos)) data: SignInByLoginDto | SignInByEmailDto) {
         let token;
-        if(data.login) {
+        if(data instanceof SignInByLoginDto) {
             token = await this.authService.signIn(data.login, data.password, 'login');
-        } else if(data.email) {
+        } else if(data instanceof SignInByEmailDto) {
             token = await this.authService.signIn(data.email, data.password, 'email');
-        } else {
-            throw new InternalServerErrorException('Unexpected scenario.');
         }
 
         if(token === SignInException.UserNotFound || token === SignInException.WrongPassword) {
-            throw new UnauthorizedException('User not found or wrong password.')
+            throw new UnauthorizedException('User not found or wrong password.');
         } else if(token === SignInException.UserUnverified) {
             throw new UnauthorizedException('User not verified.');
+        } else {
+            return { accessToken: token };
         }
-
-        return { accessToken: token };
-    }
+    } 
 
     @HttpCode(HttpStatus.OK)
     @Post('register')
+    @ApiBody({ type: SignUpDto })
     async signUp(@Body() data: SignUpDto) {
         let user = await this.authService.signUp(data);
 

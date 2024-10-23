@@ -1,19 +1,25 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsLocale, IsString } from 'class-validator';
 
 
 export default class SignUpDto {
     @IsString()
-    login: string;
+    @ApiProperty()
+    readonly login: string;
 
     @IsString()
-    nickname: string;
+    @ApiProperty()
+    readonly nickname: string;
 
     @IsString()
-    password: string;
+    @ApiProperty()
+    readonly password: string;
     
     @IsEmail()
-    email: string;
+    @ApiProperty()
+    readonly email: string;
 
     @IsLocale()
-    locale: string;
+    @ApiProperty({ description: 'ISO_639-1 code.' })
+    readonly locale: string;
 }

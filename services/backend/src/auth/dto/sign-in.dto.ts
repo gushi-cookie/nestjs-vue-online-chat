@@ -1,15 +1,45 @@
-import { IsEmail, IsString, ValidateIf } from 'class-validator';
+import { ApiBodyOptions, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { IsEmail, IsString } from 'class-validator';
+import { DtoDescription } from 'src/common/pipes/multi-dto-validation.pipe';
 
 
-export default class SignInDto {
+export class SignInBaseDto {
     @IsString()
-    @ValidateIf((ob: SignInDto) => !ob.email || !!ob.login)
-    login?: string;
-
-    @IsEmail()
-    @ValidateIf((ob: SignInDto) => !ob.login || !!ob.email)
-    email?: string;
-
-    @IsString()
-    password: string;
+    @ApiProperty()
+    readonly password: string;
 }
+
+export class SignInByLoginDto extends SignInBaseDto {
+    @IsString()
+    @ApiProperty()
+    readonly login: string;
+}
+
+export class SignInByEmailDto extends SignInBaseDto {
+    @IsEmail()
+    @ApiProperty()
+    readonly email: string;
+}
+
+
+export const signInDtos: DtoDescription[] = [
+    {
+        dtoClass: SignInByLoginDto,
+        uniqueFields: ['login'],
+    },
+    {
+        dtoClass: SignInByEmailDto,
+        uniqueFields: ['email'],
+    },
+];
+
+export const signInApiBodyOptions: ApiBodyOptions = {
+    schema: {
+        oneOf: [
+            { $ref: getSchemaPath(SignInByLoginDto) },
+            { $ref: getSchemaPath(SignInByEmailDto) },
+        ]
+    }
+};
+
+export const signInApiExtraModels: Function[] = [SignInByLoginDto, SignInByEmailDto];

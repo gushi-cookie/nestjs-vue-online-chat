@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppConfig } from './config/config.types';
 import { ConfigKey } from './config/constants';
 import { LogModes } from './common/constants';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap(): Promise<string> {
@@ -16,6 +17,15 @@ async function bootstrap(): Promise<string> {
     });
 
 
+    const swaggerConfig = new DocumentBuilder()
+        .setTitle('Online chat')
+        .setDescription('Api of the online chat.')
+        .setVersion('1.0')
+        .build();
+    const documentFactory = () => SwaggerModule.createDocument(nest, swaggerConfig);
+    SwaggerModule.setup('api', nest, documentFactory);
+
+    
     const appConfig = nest.get(ConfigService).get<AppConfig>(ConfigKey.App);
     if(!appConfig) throw new Error(`AppConfig is ${appConfig}.`);
 
