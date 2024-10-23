@@ -11,6 +11,6 @@ ENV BACKEND_PORTT=${BACKEND_PORTT}
 
 
 WORKDIR /etc/nginx
-COPY ./nginx.conf.template /etc/nginx
+COPY ./nginx.template.conf /etc/nginx
 
-RUN DOLLAR='$' envsubst < ./nginx.conf.template > ./nginx.conf
+RUN DOLLAR='$' envsubst < ./nginx.template.conf > ./nginx.conf
