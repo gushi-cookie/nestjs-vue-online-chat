@@ -13,9 +13,9 @@ async function bootstrap(): Promise<string> {
     let logLevels: LogLevel[] = LogModes.default;
     const nest = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
-        logger: logLevels
+        logger: logLevels,
     });
-
+    nest.setGlobalPrefix('api');
 
     const swaggerConfig = new DocumentBuilder()
         .setTitle('Online chat')
@@ -23,7 +23,10 @@ async function bootstrap(): Promise<string> {
         .setVersion('1.0')
         .build();
     const documentFactory = () => SwaggerModule.createDocument(nest, swaggerConfig);
-    SwaggerModule.setup('api', nest, documentFactory);
+    SwaggerModule.setup('swagger', nest, documentFactory, {
+        jsonDocumentUrl: 'swagger/json',
+        useGlobalPrefix: true,
+    });
 
     
     const appConfig = nest.get(ConfigService).get<AppConfig>(ConfigKey.App);
