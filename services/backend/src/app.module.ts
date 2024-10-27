@@ -4,7 +4,7 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configFactory from './config/config.factory';
 import { SequelizeModule, SequelizeModuleOptions } from '@nestjs/sequelize';
-import { AppConfig, LogMode, SQLConfig } from './config/config.types';
+import { AppConfig, LogMode, MongoConfig, SQLConfig } from './config/config.types';
 import { ConfigKey } from './config/constants';
 import { User } from './users/user.model';
 import { Role } from './roles/role.model';
@@ -15,10 +15,14 @@ import { TemplatesModule } from './templates/templates.module';
 import { appProviders } from './app.providers';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { VerificationsModule } from './verifications/verifications.module';
+import { UserProfile } from './user-profiles/user-profile.model';
+import { UserProfilesModule } from './user-profiles/user-profiles.module';
+import { MongooseModule, MongooseModuleFactoryOptions } from '@nestjs/mongoose';
 
 
 @Module({
     imports: [
+        UserProfilesModule,
         VerificationsModule,
         EventEmitterModule.forRoot({
             global: true,
@@ -51,11 +55,30 @@ import { VerificationsModule } from './verifications/verifications.module';
                     username: config.user,
                     password: config.password,
                     database: config.database,
-                    models: [Role, User, VerificationSession],
+                    models: [Role, User, VerificationSession, UserProfile],
                     logging: appConfig.logMode === LogMode.Debug,
                 };
                 return options;
             }
+        }),
+        MongooseModule.forRootAsync({
+            inject: [ConfigService],
+
+            useFactory: (configService: ConfigService) => {
+                const config = configService.get<MongoConfig>(ConfigKey.Mongo);
+                if(!config) throw new Error(`MongoConfig is '${config}'`);
+
+                const options: MongooseModuleFactoryOptions = {
+                    auth: {
+                        username: config.user,
+                        password: config.password,
+                    },
+
+                    uri: `mongodb://${config.host}:${config.port}`,
+                };
+
+                return options;
+            },
         }),
     ],
     providers: [...appProviders],

@@ -33,7 +33,9 @@ async function bootstrap(): Promise<string> {
     if(!appConfig) throw new Error(`AppConfig is ${appConfig}.`);
 
     logLevels = LogModes.getMode(appConfig.logMode);
-    nest.useGlobalPipes(new ValidationPipe());
+    nest.useGlobalPipes(new ValidationPipe({ transformOptions: {
+        enableImplicitConversion: true,
+    } }));
     await nest.listen(appConfig.port);
     return await nest.getUrl();
 }

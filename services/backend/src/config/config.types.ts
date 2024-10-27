@@ -123,3 +123,35 @@ export class AuthConfig implements ConfigObject {
         return obj;
     }
 }
+
+export class MongoConfig implements ConfigObject {
+    @IsString()
+    host: string;
+
+    @IsNumber()
+    @Min(PortsRange.min)
+    @Max(PortsRange.max)
+    port: number;
+
+    @IsString()
+    user: string;
+
+    @IsString()
+    password: string;
+
+    @IsString()
+    database: string;
+
+
+    static fromRawData(host: any, port: any, user: any, password: any, database: any): MongoConfig {
+        const obj = new MongoConfig();
+
+        obj.host = host;
+        obj.port = port;
+        obj.user = user;
+        obj.password = password;
+        obj.database = database;
+
+        return obj;
+    }
+}

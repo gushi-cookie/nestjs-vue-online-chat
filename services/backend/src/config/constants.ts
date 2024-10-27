@@ -3,4 +3,5 @@ export enum ConfigKey {
     App = 'app',
     SQL = 'sql',
     Mailer = 'mailer',
+    Mongo = 'mongo',
 }
