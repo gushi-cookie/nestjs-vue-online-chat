@@ -1,3 +1,5 @@
+import PasswordChangeVerifiedEvent from './events/password-change-verified.event';
+import UserRegistrationVerifiedEvent from './events/user-registration-verified.event';
 import { SessionMeta } from './verifications.interface';
 
 
@@ -21,12 +23,12 @@ export namespace sessionsMeta {
     const metas: SessionMeta[] = [
         {
             type: SessionType.Registration,
-            eventName: 'verification.registration',
+            eventName: UserRegistrationVerifiedEvent.eventName,
             perUserLimit: 1,
         },
         {
             type: SessionType.PasswordChange,
-            eventName: 'verification.password-change',
+            eventName: PasswordChangeVerifiedEvent.eventName,
             perUserLimit: 1,
         }
     ];

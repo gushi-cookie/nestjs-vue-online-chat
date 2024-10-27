@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './user.model';
 import { Role } from 'src/roles/role.model';
+import { OnEvent } from '@nestjs/event-emitter';
+import UserRegistrationVerifiedEvent from 'src/verifications/events/user-registration-verified.event';
+import PasswordChangeVerifiedEvent from 'src/verifications/events/password-change-verified.event';
 
 
 @Injectable()
@@ -12,6 +15,31 @@ export class UsersService {
     ) {};
 
 
+    // #####################
+    // #  Events Handling  #
+    // #####################
+    @OnEvent(UserRegistrationVerifiedEvent.eventName)
+    async onRegistrationVerified(event: UserRegistrationVerifiedEvent) {
+        let user = await this.findOneById(event.userId);
+        if(!user) throw new Error('Unexpected scenario');
+        
+        user.verified = true;
+        await user.save();
+    }
+
+    @OnEvent(PasswordChangeVerifiedEvent.eventName)
+    async onPasswordChangeVerified(event: PasswordChangeVerifiedEvent) {
+        let user = await this.findOneById(event.userId);
+        if(!user) return;
+
+        user.password = event.newPassword;
+        await user.save();
+    }
+
+
+    // ######################
+    // #  Public Interface  #
+    // ######################
     async createOne(login: string, nickname: string, password: string, email: string, verified: boolean): Promise<User> {
         return await this.userModel.create({
             login,

@@ -3,9 +3,11 @@ import { InjectModel } from '@nestjs/sequelize';
 import { VerificationSession } from './verification-session.model';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreationException, SessionType, VerificationResult, sessionsMeta } from './constants';
-import { SessionData } from './verifications.interface';
+import { PasswordChangeData, SessionData, UserRegistrationData } from './verifications.interface';
 import { queryEmptyOptions } from 'src/common/utils/sequelize.util';
 import { importNanoid, nanoidType } from 'src/common/esm-modules';
+import UserRegistrationVerifiedEvent from './events/user-registration-verified.event';
+import PasswordChangeVerifiedEvent from './events/password-change-verified.event';
 let nanoid: nanoidType['nanoid'];
 
 
@@ -26,7 +28,15 @@ export class VerificationsService implements OnModuleInit {
     // #####################
     // # Primary interface #
     // #####################
-    async createSession(data: SessionData, type: SessionType): Promise<string | CreationException> {
+    async createUserRegistrationSession(data: UserRegistrationData): Promise<string | CreationException> {
+        return this.createSession(SessionType.Registration, data);
+    }
+
+    async createPasswordChangeSession(data: PasswordChangeData): Promise<string | CreationException> {
+        return this.createSession(SessionType.PasswordChange, data);
+    }
+
+    private async createSession(type: SessionType, data: SessionData): Promise<string | CreationException> {
         const count = await this.countSessionsByUser(data.userId, type);
         const sessionMeta = sessionsMeta.getMeta(type);
         if(!sessionMeta) throw new Error(`Session meta couldn't be found for session type '${type}'.`);
@@ -41,7 +51,7 @@ export class VerificationsService implements OnModuleInit {
         let session = await this.findSessionByToken(token);
         if(!session) {
             return VerificationResult.TokenNotFound;
-            // TO-DO
+            // TO-DO load from config.
         } else if(session.isExpired(300000)) {
             await session.destroy({ force: true });
             return VerificationResult.Expired;
@@ -50,8 +60,7 @@ export class VerificationsService implements OnModuleInit {
         const sessionMeta = sessionsMeta.getMeta(session.type);
         if(!sessionMeta) throw new Error(`Session meta couldn't be found for session type '${session.type}'. Session id '${session.id}'.`);
 
-
-        this.eventEmitter.emit(sessionMeta.eventName, JSON.parse(session.data));
+        this.eventEmitter.emit(sessionMeta.eventName, this.establishEventClass(sessionMeta.type, JSON.parse(session.data)));
         session.destroy({ force: true });
         return VerificationResult.Verified;
     }
@@ -64,6 +73,16 @@ export class VerificationsService implements OnModuleInit {
         }
         if(!token) throw new Error(`Couldn't generate a unique session token.`);
         return token;
+    }
+
+    private establishEventClass(sessionType: SessionType, data: SessionData): object {
+        if(sessionType === SessionType.Registration) {
+            return new UserRegistrationVerifiedEvent(data.userId);
+        } else if(sessionType === SessionType.PasswordChange) {
+            return new PasswordChangeVerifiedEvent(data.userId, (data as PasswordChangeData).newPassword);
+        } else {
+            throw new Error(`Session type ${sessionType} not recognized.`);
+        }
     }
 
     createLink(token: string): string {
