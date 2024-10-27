@@ -2,14 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { SignInException, SignUpException } from './constants';
-import { JwtPayload, SignUpVerificationPayload } from './auth.interface';
+import { JwtPayload } from './auth.interface';
 import SignUpDto from './dto/sign-up.dto';
 import { User } from 'src/users/user.model';
-import { OnEvent } from '@nestjs/event-emitter';
-import { sessionsMeta, SessionType } from 'src/verifications/constants';
-
-
-const registrationEventName = sessionsMeta.getMetaOrThrow(SessionType.Registration).eventName;
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import UserLoggedInEvent from './events/user-logged-in.event';
 
 
 @Injectable()
@@ -17,17 +14,8 @@ export class AuthService {
     constructor(
         private usersService: UsersService,
         private jwtService: JwtService,
+        private eventEmitter: EventEmitter2,
     ) {}
-
-
-    @OnEvent(registrationEventName)
-    async onRegistrationVerified(payload: SignUpVerificationPayload) {
-        let user = await this.usersService.findOneById(payload.userId);
-        if(!user) throw new Error('Unexpected scenario');
-        
-        user.verified = true;
-        await user.save();
-    }
 
 
     /**
@@ -48,9 +36,10 @@ export class AuthService {
         if(user.password !== password) return SignInException.WrongPassword;
         if(!user.verified) return SignInException.UserUnverified;
         
-
         const payload: JwtPayload = { sub: user.id, login: user.login };
-        return await this.jwtService.signAsync(payload);
+        const signedPayload = await this.jwtService.signAsync(payload);
+        this.eventEmitter.emit(UserLoggedInEvent.eventName, new UserLoggedInEvent(user.id))
+        return signedPayload;
     }
 
 
@@ -71,6 +60,6 @@ export class AuthService {
             data.password,
             data.email,
             false
-        )
+        );
     }
 }

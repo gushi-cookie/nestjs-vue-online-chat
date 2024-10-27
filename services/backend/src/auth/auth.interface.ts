@@ -1,14 +1,11 @@
 import { Request } from 'express';
-import { SessionData } from 'src/verifications/verifications.interface';
 
 
 export interface AuthenticatedRequest extends Request {
-    user: any;
+    payload: JwtPayload;
 }
 
 export interface JwtPayload {
-    sub: string;
+    sub: number;
     login: string;
 }
-
-export interface SignUpVerificationPayload extends SessionData {}

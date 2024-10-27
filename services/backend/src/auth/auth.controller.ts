@@ -5,11 +5,12 @@ import SignUpDto from './dto/sign-up.dto';
 import { SignInException, SignUpException } from './constants';
 import { TemplatesService } from 'src/templates/templates.service';
 import { VerificationsService } from 'src/verifications/verifications.service';
-import { CreationException, SessionType } from 'src/verifications/constants';
+import { CreationException } from 'src/verifications/constants';
 import { MailerService } from 'src/mailer/mailer.service';
-import { SignUpVerificationPayload } from './auth.interface';
 import { ApiBody, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { MultiDtoValidationPipe } from 'src/common/pipes/multi-dto-validation.pipe';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import UserCreatedEvent from './events/user-created.event';
 
 
 @Controller('auth')
@@ -20,6 +21,7 @@ export class AuthController {
         private templatesService: TemplatesService,
         private verificationsService: VerificationsService,
         private mailerService: MailerService,
+        private eventEmitter: EventEmitter2,
     ) { };
 
 
@@ -55,13 +57,9 @@ export class AuthController {
         } else if(user === SignUpException.LoginOccupied) {
             throw new UnauthorizedException('Login occupied.');
         }
+        // TO-DO Add support for profile pics.
 
-        let verificationPayload: SignUpVerificationPayload = {
-            userId: user.id,
-        };
-        let token = await this.verificationsService.createSession(verificationPayload, SessionType.Registration);
-
-
+        let token = await this.verificationsService.createUserRegistrationSession({ userId: user.id });
         if(token === CreationException.SessionsLimitExceeded) {
             await user.destroy();
             throw new InternalServerErrorException('Unexpected scenario.');
@@ -80,6 +78,8 @@ export class AuthController {
             verifyLink,
         }, data.locale);
 
+
         await this.mailerService.sendMail([data.email], renderedHtml.subject, renderedPlain.template, renderedHtml.template);
+        this.eventEmitter.emit(UserCreatedEvent.eventName, new UserCreatedEvent(user.id, undefined));
     }
 }
