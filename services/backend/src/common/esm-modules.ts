@@ -1,9 +1,15 @@
 // @ts-expect-error
 import nanoidPkg from 'nanoid';
-export type nanoidType = typeof nanoidPkg;
-let nanoid: nanoidType;
-export async function importNanoid(): Promise<nanoidType> {
-    if(nanoid) return nanoid;
-    nanoid = await import('nanoid');
-    return nanoid;
+// @ts-expect-error
+import changeCasePkg from 'change-case';
+
+
+export const modules = {
+    nanoid: {} as typeof nanoidPkg,
+    changeCase: {} as typeof changeCasePkg,
+};
+
+export async function importESMModules() {
+    modules.nanoid = await import('nanoid');
+    modules.changeCase = await import('change-case');
 }

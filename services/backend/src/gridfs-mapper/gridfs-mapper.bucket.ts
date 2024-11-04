@@ -1,14 +1,9 @@
 import mongoose, { Connection, Model } from 'mongoose';
 import { GridFSMapper } from './schemas/gridfs-mapper.schema';
 import { Readable } from 'node:stream';
-import { importNanoid, nanoidType } from 'src/common/esm-modules';
 import { FilesCollection } from './schemas/files-collection.schema';
-let nanoid: nanoidType['nanoid'];
-
-
-export async function initImports() {
-    if(!nanoid) nanoid = (await importNanoid()).nanoid;
-}
+import { modules } from 'src/common/esm-modules';
+const { nanoid } = modules.nanoid;
 
 
 export class GridFSMapperBucket {

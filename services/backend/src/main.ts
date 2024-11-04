@@ -7,9 +7,12 @@ import { AppConfig } from './config/config.types';
 import { ConfigKey } from './config/constants';
 import { LogModes } from './common/constants';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { importESMModules } from './common/esm-modules';
 
 
 async function bootstrap(): Promise<string> {
+    await importESMModules();
+
     let logLevels: LogLevel[] = LogModes.default;
     const nest = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
