@@ -1,5 +1,4 @@
-import { Model, Table, Column, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Role } from 'src/roles/role.model';
+import { Model, Table, Column, DataType } from 'sequelize-typescript';
 
 
 @Table({ tableName: 'users', timestamps: false })
@@ -19,10 +18,6 @@ export class User extends Model {
     @Column({ allowNull: false })
     declare verified: boolean;
 
-    @Column({ allowNull: false, field: 'role_id' })
-    @ForeignKey(() => Role)
-    declare roleId: number;
-
-    @BelongsTo(() => Role)
-    declare role: Role;
+    @Column({ allowNull: false, type: DataType.JSON })
+    declare abilities: string;
 }

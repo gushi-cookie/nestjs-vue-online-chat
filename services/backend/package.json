@@ -11,8 +11,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "db:create": "sequelize db:create",
-    "db:migrate": "sequelize db:migrate",
-    "db:seed-roles": "sequelize db:seed --seed primary-roles.js"
+    "db:migrate": "sequelize db:migrate"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.4",

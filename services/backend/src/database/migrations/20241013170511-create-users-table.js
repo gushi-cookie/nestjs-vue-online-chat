@@ -1,9 +1,11 @@
 'use strict';
 
+const tableName = 'users';
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('users', {
+        await queryInterface.createTable(tableName, {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -26,19 +28,15 @@ module.exports = {
             email: {
                 type: Sequelize.STRING,
                 allowNull: false,
+            },
+            abilities: {
+                type: Sequelize.JSON,
+                allowNull: false,
             }
-        });
-
-        await queryInterface.addColumn('users', 'role_id', {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            onUpdate: 'CASCADE',
-            onDelete: 'CASCADE',
-            references: { model: 'roles', key: 'id' }
         });
     },
 
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('users');
+        await queryInterface.dropTable(tableName);
     }
 };

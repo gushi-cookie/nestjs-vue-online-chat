@@ -52,7 +52,7 @@ import { MongooseModule, MongooseModuleFactoryOptions } from '@nestjs/mongoose';
                     username: config.user,
                     password: config.password,
                     database: config.database,
-                    models: [Role, User, VerificationSession, UserProfile],
+                    models: [User, VerificationSession, UserProfile],
                     logging: appConfig.logMode === LogMode.Debug,
                 };
                 return options;
