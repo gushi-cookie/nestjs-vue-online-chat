@@ -1,28 +1,24 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { VerificationSession } from './verification-session.model';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreationException, SessionType, VerificationResult, sessionsMeta } from './constants';
 import { PasswordChangeData, SessionData, UserRegistrationData } from './verifications.interface';
 import { queryEmptyOptions } from 'src/common/utils/sequelize.util';
-import { importNanoid, nanoidType } from 'src/common/esm-modules';
 import UserRegistrationVerifiedEvent from './events/user-registration-verified.event';
 import PasswordChangeVerifiedEvent from './events/password-change-verified.event';
-let nanoid: nanoidType['nanoid'];
+import { modules } from 'src/common/esm-modules';
+const { nanoid } = modules.nanoid;
 
 
 @Injectable()
-export class VerificationsService implements OnModuleInit {
+export class VerificationsService {
     constructor(
         private eventEmitter: EventEmitter2,
 
         @InjectModel(VerificationSession)
         private verificationSession: typeof VerificationSession,
     ) {}
-
-    async onModuleInit() {
-        nanoid = (await importNanoid()).nanoid;
-    }
 
 
     // #####################
