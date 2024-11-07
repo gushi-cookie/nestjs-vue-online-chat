@@ -7,8 +7,6 @@ import { SequelizeModule, SequelizeModuleOptions } from '@nestjs/sequelize';
 import { AppConfig, LogMode, MongoConfig, SQLConfig } from './config/config.types';
 import { ConfigKey } from './config/constants';
 import { User } from './users/user.model';
-import { Role } from './roles/role.model';
-import { RolesModule } from './roles/roles.module';
 import { VerificationSession } from './verifications/verification-session.model';
 import { MailerModule } from './mailer/mailer.module';
 import { TemplatesModule } from './templates/templates.module';
@@ -30,7 +28,6 @@ import { MongooseModule, MongooseModuleFactoryOptions } from '@nestjs/mongoose';
         }),
         TemplatesModule,
         MailerModule,
-        RolesModule,
         UsersModule,
         AuthModule,
         ConfigModule.forRoot({
