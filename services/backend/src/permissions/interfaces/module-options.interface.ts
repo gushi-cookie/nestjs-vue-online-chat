@@ -17,4 +17,9 @@ export interface PermissionsModuleOptions {
      * duplicate since all groups get merged.
      */
     groups?: Group[];
+
+    /**
+     * Register this module as global.
+     */
+    global?: boolean;
 }

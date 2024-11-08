@@ -15,6 +15,7 @@ export class PermissionsModule {
             module: PermissionsModule,
             providers: [PermissionsService],
             exports: [PermissionsService],
+            global: options.global,
         };
     }
 }
