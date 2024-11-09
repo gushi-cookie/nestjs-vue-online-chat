@@ -57,4 +57,12 @@ export class StaticPermissionsStorage {
     static getPermissionByPath(path: string): StaticPermission | null {
         return permissionsUtil.findNestedPermission(path.split('.'), this.permissions);
     }
+
+    static getPermissions(): StaticPermission[] {
+        return this.permissions;
+    }
+
+    static countPermissions(): number {
+        return this.permissions.length;
+    }
 }

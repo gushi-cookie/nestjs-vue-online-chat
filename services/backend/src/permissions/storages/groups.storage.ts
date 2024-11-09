@@ -12,10 +12,7 @@ export class GroupsStorage {
 
 
     static addGroups(groups: Group[]) {
-        let newGroups = groupsUtil.mergeGroupsArray(...this.groups, ...groups);
-        newGroups = newGroups.sort((group1, group2) => group1.name.localeCompare(group2.name));
-
-        this.groups = newGroups;
+        this.groups = groupsUtil.mergeGroupsArray(...this.groups, ...groups);
     }
 
     static getGroup(name: string): Group | null {
@@ -27,5 +24,23 @@ export class GroupsStorage {
 
     static hasPermissionByPath(staticPath: string, group: Group): boolean {
         return permissionsUtil.includesNestedPermission(staticPath.split('.'), group.permissions);
+    }
+
+    static getGroups(): Group[] {
+        return this.groups;
+    }
+
+    static countGroups(): number {
+        return this.groups.length;
+    }
+
+    static getParentGroups(childGroup: Group): Group[] {
+        let result: Group[] = [];
+
+        for(let group of this.groups) {
+            if(group.childGroups.includes(childGroup.name)) result.push(group);
+        }
+
+        return result;
     }
 }

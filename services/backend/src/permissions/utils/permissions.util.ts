@@ -2,13 +2,13 @@ import { arrays } from 'src/common/utils/collection.util';
 import { PermissionNode } from '../interfaces/permission-nodes.interface';
 
 
+
 /**
  * Function that merges special data of T type but not PermissionNode's data (key, permissions).
  */
 export interface MergeNodesCallback<T> {
     (first: T, second: T): T;
 }
-
 
 /**
  * 
@@ -69,6 +69,7 @@ function mergePermissions<T extends PermissionNode>(first: T, second: T, mergeNo
 }
 
 
+
 /**
  * Check if permissions array contains a permission by the key.
  * @param key - key of the searched permission.
@@ -92,6 +93,7 @@ function includesNestedPermission<T extends PermissionNode>(path: string[], perm
     let perm = findNestedPermission(path, permissions);
     return perm !== null;
 }
+
 
 
 /**
@@ -144,6 +146,63 @@ function findNestedPermission<T extends PermissionNode>(path: string[], permissi
 }
 
 
+
+/**
+ * Sort nested permissions of every passed permission, by key.
+ * 
+ * Note that the function mutates passed permissions. Use
+ * structuredClone() function to clone permission nodes.
+ * @param array - list of permissions to sort.
+ */
+function sortPermissionsArray<T extends PermissionNode>(...array: T[]) {
+    for(let permission of array) {
+        sortPermission(permission);
+    }
+}
+
+/**
+ * Sort nested permissions of a passed permission, by key.
+ * 
+ * Note that the function mutates passed permissions. Use
+ * structuredClone() function to clone permission nodes.
+ * @param permission - permission to sort.
+ */
+function sortPermission<T extends PermissionNode>(permission: T) {
+    permission.permissions.sort((a, b) => a.key.localeCompare(b.key));
+
+    for(let childPermission of permission.permissions) {
+        sortPermission(childPermission);
+    }
+}
+
+
+
+export interface FormNodeVariantsCallback<T> {
+    (permission: T): string[];
+}
+
+function formAvailablePaths<T extends PermissionNode>(formVariants: FormNodeVariantsCallback<T>, permission: T): string[] {
+    return _formAvailablePaths('', formVariants, permission);
+}
+
+function _formAvailablePaths<T extends PermissionNode>(prefix: string, formVariants: FormNodeVariantsCallback<T>, permission: T): string[] {
+    let result: string[] = [];
+    prefix = prefix.length === 0 ? permission.key : `${prefix}.${permission.key}`;
+    result.push(prefix);
+    
+    for(let variant of formVariants(permission)) {
+        result.push(`${prefix}.${variant}`);
+    }
+
+    for(let nested of permission.permissions) {
+        result.push(..._formAvailablePaths(prefix, formVariants, nested as T));
+    }
+
+    return result;
+}
+
+
+
 export default {
     mergePermissionsArray,
     mergePermissions,
@@ -154,4 +213,9 @@ export default {
     findPermissionByKey,
     findNestedPermissionOrValidPath,
     findNestedPermission,
+
+    sortPermissionsArray,
+    sortPermission,
+
+    formAvailablePaths,
 };
